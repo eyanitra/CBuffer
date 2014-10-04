@@ -2,13 +2,29 @@
 #ifdef _EFT30_
 #	include <SDK30.h>
 #	include "DSCtraceDebug.h"
+#   define Z_CPY(a,b,c)		memcpy(a, b, c)
 #	define Z_MALLOX(x)		umalloc(x)
 #	define Z_FREE(x)		ufree(x)
 #else
 #	include <stdlib.h>
 #	include <string.h>
+
+#   define Z_CPY(a, b, c)	copycat(a, b, c)	
 #	define Z_MALLOX(x)		malloc(x)
 #	define Z_FREE(x)		free(x)
+
+// since memcpy always end with segmentation fault
+void copycat(void *trg, const void* src, int len){
+	unsigned char *trgx, *srcx;
+	int i;
+	trgx =(unsigned char*)trg;
+	srcx =(unsigned char*)src;
+	for(i = 0; i < len; ++i){
+		*trgx = *srcx;
+		trgx++;
+		srcx++;
+	}
+}
 #endif
 
 
@@ -28,6 +44,7 @@ CB_HDL CB_create(int bSize, int elSize)
 	CB_HDL out;
 	handle *hdl = (handle*)Z_MALLOX(sizeof(handle));
 	hdl->bSize = elSize *bSize;
+	hdl->lSize = elSize;
 	hdl->first = 0;
 	hdl->next = 0;
 	hdl->isEmpty = 1;
@@ -55,13 +72,15 @@ unsigned char CB_isEmpty(CB_HDL *hd)
 unsigned char CB_addElement(CB_HDL *hd,const void *element)
 {
 	handle *hdl = (handle*)hd->rsc;
+	void *trg;
 	if(hdl == 0)
 		return 0;
 	if(hdl->first == hdl->next){
 		if(hdl->isEmpty == 0)
 			return 0;
 	}
-	memcpy(&hdl->buffer[hdl->next], element, hdl->lSize);
+	trg = hdl->buffer+hdl->next;
+	Z_CPY(trg, element, hdl->lSize);
 	if(hdl->next == (hdl->bSize - hdl->lSize))
 		hdl->next = 0;
 	else
@@ -80,7 +99,7 @@ unsigned char CB_getElement(CB_HDL *hd, void *element)
 		if(hdl->isEmpty)
 			return 0;
 	}
-	memcpy(element, &hdl->buffer[hdl->first], hdl->lSize);
+	Z_CPY(element,(hdl->buffer +hdl->first), hdl->lSize);
 	if(hdl->first == (hdl->bSize - hdl->lSize))
 		hdl->first = 0;
 	else
@@ -96,13 +115,12 @@ int CB_curSize(CB_HDL *hd)
 	long t;
 	
 	handle *hdl = (handle*)hd->rsc;
-	if(hdl->next >= hdl->first)
+	if(hdl->next > hdl->first)
 		t = hdl->next - hdl->first;
 	else
-		t = hdl->bSize + hdl->first - hdl->next;
-	while(t > 0){
+		t = hdl->bSize - hdl->first + hdl->next;
+	for(c = 0; t > 0; ++c){
 		t -= hdl->lSize;
-		++c;
 	}
 	return c;
 }
