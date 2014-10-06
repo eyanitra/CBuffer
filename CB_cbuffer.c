@@ -14,7 +14,7 @@
 #	define Z_FREE(x)		free(x)
 
 // since memcpy always end with segmentation fault
-void copycat(void *trg, const void* src, int len){
+static void copycat(void *trg, const void* src, int len){
 	unsigned char *trgx, *srcx;
 	int i;
 	trgx =(unsigned char*)trg;
