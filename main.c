@@ -34,12 +34,23 @@ void extMellon(CB_HDL *nh)
 	}
 }
 
+void peekMellon(CB_HDL *pk)
+{
+	MEL mallun;
+	int i;
+	for(i = 13; i >= 0; --i){
+		CB_peek(pk, i, &mallun);
+		printf("peek mallun (%d): %d\n",i,mallun.berat);
+	}
+}
+
 
 int main(int argc, char **argv)
 {
 	CB_HDL hdl;
 	hdl = CB_create(11, sizeof(MEL));
 	addMellon(&hdl);
+	peekMellon(&hdl);
 	extMellon(&hdl);
 	CB_clear(&hdl);
 	printf("hello world\n");
