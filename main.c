@@ -45,6 +45,17 @@ void peekMellon(CB_HDL *pk)
 }
 
 
+void korekMellon(CB_HDL *pk)
+{
+	if(!CB_isEmpty(pk)){
+		printf("num of mallun: %d\n",CB_curSize(pk));
+		CB_removeElements(pk);
+		printf("num of mallun: %d\n",CB_curSize(pk));
+		printf("%s mallun survive\n", CB_isEmpty(pk)?"none":"some");
+	}
+}
+
+
 int main(int argc, char **argv)
 {
 	CB_HDL hdl;
@@ -52,7 +63,10 @@ int main(int argc, char **argv)
 	addMellon(&hdl);
 	peekMellon(&hdl);
 	extMellon(&hdl);
+	printf("next\n");
+	addMellon(&hdl);
+	korekMellon(&hdl);
 	CB_clear(&hdl);
-	printf("hello world\n");
+	printf("end of test\n");
 	return 0;
 }
